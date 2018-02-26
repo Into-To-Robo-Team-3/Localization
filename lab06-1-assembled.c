@@ -103,8 +103,7 @@ void updateProbabilities(bool sonarReading, int distance){//updates the probabil
 			temp[i] = currentProbs[i-distance];
 	}
 	for(int i = 0; i<distance;i++){
-			temp[i] = currentProbs[360*RESOLUTION
-			-distance+i];	
+			temp[i] = currentProbs[360*RESOLUTION-distance+i];	
 	}
 	//****************************************************************
 	//this one is for the actual algorithm
