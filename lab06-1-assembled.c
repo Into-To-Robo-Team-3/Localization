@@ -7,7 +7,7 @@
 
 #define RESOLUTION 1/5 //cells per degree
 #define RINVERSE 5
-#define WIDTH 17
+#define WIDTH 17 //in degrees
 #define SPACE 5.5
 #define BLACK 40
 #define POWER 50
@@ -108,7 +108,7 @@ void updateProbabilities(bool sonarReading, int distance){//updates the probabil
 	//****************************************************************
 	//this one is for the actual algorithm
 	for(int i = 0; i<360*RESOLUTION;i++){
-		lastProbs[i] = sonarReading ? courseProbs[i]:1.0-courseProbs[i];
+		lastProbs[i] = sonarReading ? courseProbs[i] : 1.0-courseProbs[i];
 		currentProbs[i] = lastProbs[i]*temp[i];
 	}
 	//finding the max of the prob array
@@ -125,12 +125,13 @@ void updateProbabilities(bool sonarReading, int distance){//updates the probabil
 task localization(){
 	//initializing courseProbs to the correct values***************************************
 	int index = 0;
-	for(int i = 0;i<16;i++){
-		int prob = (course>>i)&1;
+	for(int i = 0;i<16;i++){ //loop through course
+		int prob = (course>>i)&1; //isolate last tick in course 
+		//iterate through section representing obstacle and fill indices 
 		for(int j = 0;j<22+i%2;j++){//22+j%2 is the closest you can get to 22.5 as an int
 			index++;
-			if(index<360*RESOLUTION){
-				if(j<SPACE){
+			if(index<360*RESOLUTION){ //guarantee no segfault
+				if(j<SPACE){ //conditional not being used, can't see space
 					courseProbs[index] = prob;
 				}
 				else{
@@ -147,6 +148,7 @@ task localization(){
 	while(true){
 		wait1Msec(1);
 		t++;
+		//11.5 = time to travel around circle
 		if(t>=unitTime(11.5)){ //every 5 miliseconds update probability
 			nxtDisplayClearTextLine(0);
 			nxtDisplayClearTextLine(1);
