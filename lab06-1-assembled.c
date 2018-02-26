@@ -7,7 +7,7 @@
 
 #define RESOLUTION 1/5 //cells per degree
 #define RINVERSE 5
-#define WIDTH 17 //in degrees
+#define WIDTH 17
 #define SPACE 5.5
 #define BLACK 40
 #define POWER 50
@@ -15,8 +15,8 @@
 float courseProbs[360*RESOLUTION];//this is the probs to assign if it sees an obstacle
 float lastProbs[360*RESOLUTION];
 float currentProbs[360*RESOLUTION];//probability arrays
-//1011001000111001
-int course = 0xB239;
+//0011000100101101
+int course = 0x312D;
 int location = 0;
 
 task followLine(){
@@ -77,8 +77,8 @@ task followLine(){
 	}
 
 
-int unitTime(float lapTime){//converts angles into seconds
-		int ans = (int)((float)RINVERSE*lapTime*1000/360.0);
+int unitTicks(float lapTicks){//converts angles into seconds
+		int ans = (int)((float)RINVERSE*lapTicks/360.0);
 		return ans;
 }
 
@@ -108,7 +108,7 @@ void updateProbabilities(bool sonarReading, int distance){//updates the probabil
 	//****************************************************************
 	//this one is for the actual algorithm
 	for(int i = 0; i<360*RESOLUTION;i++){
-		lastProbs[i] = sonarReading ? courseProbs[i] : 1.0-courseProbs[i];
+		lastProbs[i] = sonarReading ? 1.5*courseProbs[i]+0.5 : 2.0-.5*courseProbs[i];
 		currentProbs[i] = lastProbs[i]*temp[i];
 	}
 	//finding the max of the prob array
@@ -119,23 +119,28 @@ void updateProbabilities(bool sonarReading, int distance){//updates the probabil
 			location = i*RINVERSE;
 		}
 	}
+	for(int i = 0;i<360*RESOLUTION;i++){
+		currentProbs[i] /= max;
+	}
 	
 }
 
 task localization(){
 	//initializing courseProbs to the correct values***************************************
 	int index = 0;
-	for(int i = 0;i<16;i++){ //loop through course
-		int prob = (course>>i)&1; //isolate last tick in course 
-		//iterate through section representing obstacle and fill indices 
-		for(int j = 0;j<22+i%2;j++){//22+j%2 is the closest you can get to 22.5 as an int
+	for(int i = 0;i<16;i++){
+		int prob = (course>>i)&1;
+		for(int j = 0;j<22*RESOLUTION+i%2;j++){//have to change this if we change RESOLUTION
 			index++;
-			if(index<360*RESOLUTION){ //guarantee no segfault
-				if(j<SPACE){ //conditional not being used, can't see space
+			if(index<360*RESOLUTION){
+				if(j<SPACE){
 					courseProbs[index] = prob;
 				}
 				else{
 					courseProbs[index] = prob;
+				}
+				if(i%2 == 1){
+						courseProbs[index] = courseProbs[index]/2+courseProbs[index-1]/2;
 				}
 			}
 		}
@@ -144,18 +149,16 @@ task localization(){
 	for(int i = 0;i<360*RESOLUTION;i++){
 		currentProbs[i] = 1;	
 	}
-	int t = 0;
+	nMotorEncoder[leftMotor] = 0;
 	while(true){
 		wait1Msec(1);
-		t++;
-		//11.5 = time to travel around circle
-		if(t>=unitTime(11.5)){ //every 5 miliseconds update probability
+		if(nMotorEncoder[leftMotor]>=unitTicks(3600)){ //every 5 miliseconds update probability
 			nxtDisplayClearTextLine(0);
 			nxtDisplayClearTextLine(1);
 			nxtDisplayClearTextLine(2);
 			updateProbabilities(readSonar(),5);
 			nxtDisplayString(2,"%d",location);
-			t=0;
+			nMotorEncoder[leftMotor] = 0;
 		}
 	}
 }
