@@ -9,7 +9,7 @@
 #define RINVERSE 5
 #define WIDTH 17
 #define SPACE 5.5
-#define GOALTICK 7
+#define GOALTICK 12
 
 #define BLACK 40
 #define POWER 50
