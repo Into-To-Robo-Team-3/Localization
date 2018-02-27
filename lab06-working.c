@@ -9,6 +9,8 @@
 #define RINVERSE 5
 #define WIDTH 17
 #define SPACE 5.5
+#define GOALTICK 3
+
 #define BLACK 40
 #define POWER 50
 
@@ -19,9 +21,9 @@ float currentProbs[360*RESOLUTION];//probability arrays
 int course = 0x3129;
 int location = 0;
 bool stopped = false;
+bool flag
 int lastLocation = 0;
-int goal = 0;
-int beforeGoal = 355;
+int goal;
 
 task followLine(){
 	int temp = 0;
@@ -133,6 +135,7 @@ void updateProbabilities(bool sonarReading, int distance){//updates the probabil
 }
 
 task localization(){
+	goal  = GOALTICK*360/16-GOALTICK*360/16%5;
 	//initializing courseProbs to the correct values***************************************
 	int index = 0;
 	for(int i = 0;i<16;i++){
@@ -166,8 +169,11 @@ task localization(){
 			nxtDisplayString(2,"%d",location);
 			lastLocation = location;
 			updateProbabilities(readSonar(),RINVERSE);
-			if(lastLocation==beforeGoal&&location==goal){
-				stopped = true;
+			if(lastLocation== goal>5? goal-5: 355 && location==goal){
+				if(flag)
+					stopped = true;
+				else
+					flag = true;
 			}
 		}
 		nxtDisplayClearTextLine(4);
