@@ -63,7 +63,7 @@ task followLine(){
 		//motor[leftMotor]=30;
 		if(SensorValue(light)<BLACK){
 			motor[leftMotor] = 20;
-			motor[rightMotor] = 15;
+			motor[rightMotor] =40;
 			temp = 1;
 			//wait1Msec(10);
 		}
