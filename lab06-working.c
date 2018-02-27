@@ -9,7 +9,7 @@
 #define RINVERSE 5
 #define WIDTH 17
 #define SPACE 5.5
-#define GOALTICK 3
+#define GOALTICK 7
 
 #define BLACK 40
 #define POWER 50
@@ -18,7 +18,7 @@ float courseProbs[360*RESOLUTION];//this is the probs to assign if it sees an ob
 float lastProbs[360*RESOLUTION];
 float currentProbs[360*RESOLUTION];//probability arrays
 //0011000100101001
-int course = 0x3129;
+int course = 0x3229;
 int location = 0;
 bool stopped = false;
 bool flag
@@ -160,6 +160,7 @@ task localization(){
 		currentProbs[i] = 1;	
 	}
 	nMotorEncoder[leftMotor] = 0;
+	int tick = 0;
 	while(true){
 		if(nMotorEncoder[leftMotor]>=unitTicks(3570)){ //every x ticks update probability
 			nMotorEncoder[leftMotor] = 0;
@@ -170,11 +171,12 @@ task localization(){
 			lastLocation = location;
 			updateProbabilities(readSonar(),RINVERSE);
 			if(lastLocation== goal>5? goal-5: 355 && location==goal){
-				if(flag)
+				if(flag&&tick>=360*RESOLUTION-1)
 					stopped = true;
 				else
 					flag = true;
 			}
+			tick++;
 		}
 		nxtDisplayClearTextLine(4);
 		nxtDisplayString(4,"%d",nMotorEncoder[leftMotor]);
